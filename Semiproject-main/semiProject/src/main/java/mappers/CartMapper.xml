@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="CartDAO">
+
+	<!-- 장바구니에 담기 -->
+	<insert id="addCart" parameterType="CartVO">
+		INSERT INTO CART(cart_no,
+		customer_no, p_no, cart_count)
+		VALUES(cart_no_seq.nextval, #{customerNo}, #{pNo},
+		#{cartCount})
+	</insert>
+
+	<!-- 장바구니 목록 조회 -->
+	<select id="cartList" resultType="CartVO">
+		SELECT c.*, p.*
+		FROM cart c JOIN
+		product p
+		ON c.p_no = p.p_no
+	</select>
+
+	<!-- 로그인 장바구니 조회 <select id=cartList resultType="CartVO"> SELECT c.cart_count, 
+		p.p_no, cus.customer_id FROM cart c, product p, customer cus WHERE c.p_no 
+		= p.p_no and c.customer_no = cus.customer_no -->
+
+
+	<!-- 장바구니 삭제 -->
+	<delete id="deleteCart">
+	<![CDATA[
+		DELETE FROM CART
+		WHERE cart_no = #{cartNo}
+	]]>
+	</delete>
+
+	<!-- 장바구니 수정 -->
+	<update id="updateMinusCart">
+		UPDATE cart
+		SET cart_count = cart_count -1
+		WHERE cart_no = #{cartNo}
+	</update>
+
+	<update id="updatePlusCart">
+		UPDATE cart
+		SET cart_count = cart_count+1
+		WHERE cart_no = #{cartNo}
+	</update>
+
+	<!-- 스크랩하기 -->
+	<insert id="addScrap" parameterType="CartVO">
+		INSERT INTO scrap(scrap_no, customer_no, p_no)
+		VALUES(scrap_no_seq.nextval, #{customerNo}, #{pNo})
+	</insert>
+
+</mapper>
+

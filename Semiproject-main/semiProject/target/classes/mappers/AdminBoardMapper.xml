@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="AdminBoardDAO">
+
+	<!-- 공지사항 작성/파일 첨부 -->
+	<insert id="insertBoard" parameterType="BoardVO">
+		INSERT INTO 
+		BOARD(board_no, board_title, board_content, board_date
+	<if test="boardFname != null">
+		,board_Fname,board_rfname	
+	</if>
+		)
+		VALUES(board_no_seq.NEXTVAL, #{boardTitle}, #{boardContent}, sysdate
+	<if test="boardFname != null">
+		,#{boardFname}, #{boardRFname}
+	</if>
+		)
+	</insert>
+	
+	<!-- 공지사항 목록 출력 -->
+	<select id="getBoardList" resultType="BoardVO">
+		SELECT to_CHAR(board_date, 'YY/MM/DD') boardDate, board_no, board_title, board_content, board_Fname  
+		FROM board
+		ORDER BY board_no desc
+	</select>
+	
+	<!-- 공지사항 상세 보기 -->
+	<select id="getBoard" parameterType="BoardVO" resultType="BoardVO">
+		SELECT * 
+		FROM board
+		WHERE board_no = #{boardNo}
+	</select>
+	
+	<!-- 공지사항 수정 -->
+	<update id="updateBoard" parameterType="BoardVO">
+		UPDATE board SET
+		board_title = #{boardTitle},
+		board_content = #{boardContent}
+ 	<if test="boardFname != null ">
+		, board_Fname = #{boardFname}
+	</if><!-- 파일 수정 null이 아닐때 -->
+		WHERE board_no = #{boardNo}
+	</update>
+	
+	<!-- 공지사항 내용 불러오기 -->
+	<select id="selectBoard" parameterType="BoardVO" resultType="BoardVO">
+		SELECT *
+		FROM board
+		WHERE board_no = #{boardNo}
+	</select>
+	
+	<!-- 공지사항 삭제 -->
+	<delete id="deleteBoard" parameterType="BoardVO">
+		DELETE FROM board 
+		WHERE board_no = #{boardNo}
+	</delete>
+	
+	
+</mapper>

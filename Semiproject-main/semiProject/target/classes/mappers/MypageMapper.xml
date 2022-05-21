@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="MyPageDAO">
+	
+	<!-- 개인정보 조회 -->
+	<select id="viewCustomer" parameterType="int" resultType="CustomerVO">
+		SELECT 
+			customer_no, customer_id, customer_name, customer_email
+		FROM CUSTOMER
+		WHERE customer_no = #{customerNo}
+	</select>
+	
+	
+	<!-- 개인정보 수정 -->
+	<update id="updateCustomer" parameterType="CustomerVO">
+		UPDATE CUSTOMER SET 
+		customer_pass = #{customerPass},
+		customer_name = #{customerName},
+		customer_email = #{customerEmailF}||'@'||#{customerEmailE}
+		WHERE
+		customer_no = #{customerNo}
+	</update>
+	
+	<!--주문목록+페이징-->
+	<select id="orderList"  parameterType="hashMap" resultType="OrderVO">
+		<![CDATA[
+		 SELECT *
+		 FROM (select row_number() over(order by u.customer_NO) rNum, 
+		 		u.order_no, u.customer_no, u.order_date, c.customer_name, c.customer_id
+		        FROM u_order u, customer c
+		        WHERE u.customer_no=#{customerNo})
+		 WHERE rNum between #{displayPost} and #{lastNum}
+		]]>
+	</select>
+	
+	 <!-- 스크랩 조회  -->
+    <select id="scrapView" parameterType="hashMap" resultType="ScrapVO">
+    <![CDATA[
+    	 SELECT *
+		 FROM (select row_number() over(order by scrap_no) rNum, 
+		 		s.customer_no, s.p_no, pi.stored_file_name, p.p_name, p.p_price from scrap s, p_image pi, product p
+        		WHERE s.p_no=pi.p_no and pi.p_no=p.p_no and customer_no=#{customerNo})
+		 WHERE rNum between  #{displayPost} and #{lastNum}
+		 ]]>
+    </select>
+	
+	<!--주문 상세조회-->
+	<select id="orderDetail" resultType="OrderListVO">
+		select pi.stored_file_name, u.order_no, ud.order_detail_number, p.p_name ,p.p_no, c.customer_No
+				, ud.product_count, ud.product_price ,ud.order_check, ud.refund_check
+		from P_IMAGE pi, PRODUCT p, CUSTOMER c, U_O_DETAIL ud, U_ORDER u
+		where c.customer_no=u.customer_no 
+		and u.order_no = ud.order_no 
+		and ud.p_no=p.p_no
+		and p.p_no=pi.p_no
+		and ud.order_no=#{orderNo}
+	</select>
+	
+	<!--리뷰에 뜨는 상품-->
+	<select id="orderDetailReview" resultType="OrderListVO">
+		select pi.stored_file_name, u.order_no,c.customer_no, ud.order_detail_number,
+				p.p_no, p.p_name , ud.product_count, ud.product_price 
+		from P_IMAGE pi, PRODUCT p, CUSTOMER c, U_O_DETAIL ud, U_ORDER u
+		where c.customer_no=u.customer_no 
+		and u.order_no = ud.order_no 
+		and ud.p_no=p.p_no
+		and p.p_no=pi.p_no
+		and ud.order_detail_number=#{orderDetailNumber}
+	</select>
+	
+	<!-- 리뷰작성 -->
+	<insert id="writeReview" parameterType="ReviewVO">
+		insert into p_review(R_no, p_no,customer_no,r_id,r_content,R_date,R_star)
+        VALUES(REVIEW_NO_SEQ.nextval, #{pNo}, #{customerNo}, #{rId}, #{rContent}, sysdate, #{rStar})
+    </insert>
+    
+    <!-- 작성한 리뷰보기 -->
+    <select id="reviewView" parameterType="ReviewVO" resultType="ReviewVO">
+		SELECT r.r_id rId, r.r_star rStar, r.r_content rContent, r.r_date rDate, r.r_no as rNo
+		FROM customer c, p_review r, u_o_detail ud
+		WHERE c.customer_no=r.customer_no
+			and ud.p_no=r.p_no
+			and c.customer_no=#{customerNo}
+			and ud.order_detail_number=#{orderDetailNumber}
+    </select>
+             
+    <!--주문 리스트 전체페이지 카운트-->      
+    <select id="countPage" parameterType="int" resultType="int">
+    	SELECT
+    		count(order_no)
+    	FROM U_ORDER
+    	WHERE customer_no=#{customerNo}
+    </select>
+    
+    <!--스크랩 전체페이지 카운트-->      
+    <select id="countPageScrap" parameterType="int" resultType="int">
+    	SELECT
+    		count(scrap_no)
+    	FROM scrap
+    	WHERE customer_no=#{customerNo}
+    </select>
+    
+    <!-- 리뷰작성 여부  -->
+    <select id="reviewCheck" parameterType="OrderListVO" resultType="OrderListVO">
+		SELECT count(r_no) rcheck
+		FROM p_review r, u_o_detail ud
+		WHERE  ud.p_no=r.p_no
+				and r.customer_no=#{customerNo}
+				and ud.order_detail_number=#{orderDetailNumber}
+    </select>
+    
+    <!-- 스크랩 삭제 -->
+    <delete id="scrapDelete" parameterType="ScrapVO">
+     DELETE FROM scrap 
+     WHERE customer_no=#{customerNo} 
+     	   and p_no=#{orderDetailNumber};
+    </delete>
+   
+</mapper>

@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="ChartsDAO">
+
+
+	<select id="login" parameterType="AdminVO" resultType="AdminVO">
+		SELECT *
+		FROM admin
+		WHERE admin_id = #{adminId}
+			and admin_pass =#{adminPass}
+	</select>
+
+	<!-- 차트들 -->
+	<select id="pieCharts" resultType="ChartsVO">
+		SELECT p_c.category_code,
+		p_c.category_name, sum(o_d.product_count) as pieCount
+		FROM product p
+		join u_o_detail o_d on p.p_no = o_d.p_no
+		JOIN p_category p_c on
+		p_c.category_code = p.category_code
+		group by p_c.category_code,
+		p_c.category_name
+	</select>
+
+	<select id="barCharts" resultType="ChartsVO">
+		<![CDATA[
+		SELECT age||'대' as age, count(case when customer_sex='M' Then 1 End) as menCount, count(case when customer_sex='W' Then 1 End) as womenCount
+		FROM(SELECT floor((to_char(sysdate,'YYYY')+1 - (substr(customer_rrn,0,2)+
+					(case
+					when substr(customer_rrn,7,1)<3 then 1900
+					when substr(customer_rrn,7,1)>=3 then 2000
+					end)))/10)*10 as age,
+					c.customer_sex
+			FROM customer c join u_order u
+				ON c.customer_no = u.customer_no join u_o_detail d
+				ON u.order_no = d.order_no
+		)
+		group by age order by age
+		]]>
+	</select>
+
+	<select id="graphCharts" resultType="ChartsVO">
+		<![CDATA[
+		SELECT TO_CHAR(b.dt, 'MM')||'월' AS orderMonth, NVL(sum(a.sum), 0) graphSumPrice
+  		FROM (  
+  			SELECT to_char(o.order_date,'YYYY-MM-DD') order_date, sum(u.product_price*u.product_count) sum
+         	FROM u_o_detail u join u_order o
+         		 on u.order_no = o.order_no
+         	WHERE order_date BETWEEN TO_DATE('2022-01-01', 'YYYY-MM-DD')
+								 AND TO_DATE('2022-12-31', 'YYYY-MM-DD')
+         	GROUP BY order_date
+        	 ) a
+      	, ( SELECT TO_DATE('2022-01-01','YYYY-MM-DD') + LEVEL - 1 AS dt
+            FROM dual 
+         	CONNECT BY LEVEL <= (TO_DATE('2022-12-31','YYYY-MM-DD') 
+                               - TO_DATE('2022-01-01','YYYY-MM-DD') + 1)
+        	 ) b
+  		WHERE b.dt = a.order_date(+)
+  		GROUP BY TO_CHAR(b.dt, 'MM')
+  		ORDER BY TO_CHAR(b.dt, 'MM')
+		]]>
+	</select>
+	
+	<select id="graphDayCharts" parameterType="ChartsVO" resultType="ChartsVO">
+		<![CDATA[
+		SELECT TO_CHAR(b.dt, 'MM-DD') AS orderDay, NVL(sum(a.sum), 0) daySum
+  		FROM (  SELECT to_char(o.order_date,'YYYY-MM-DD') order_date, sum(u.product_price*u.product_count) sum
+         		FROM u_o_detail u join u_order o
+        		on u.order_no = o.order_no
+        		WHERE order_date BETWEEN TO_DATE('2022-01-01', 'YYYY-MM-DD')
+									 AND TO_DATE('2022-12-31', 'YYYY-MM-DD')
+         		group by order_date
+        	 ) a
+      		, ( SELECT TO_DATE('2022-01-01','YYYY-MM-DD') + LEVEL - 1 AS dt
+            	FROM dual 
+         		CONNECT BY LEVEL <= (TO_DATE('2022-12-31','YYYY-MM-DD') 
+                           		   - TO_DATE('2022-01-01','YYYY-MM-DD') + 1)
+        	) b
+  		WHERE b.dt = a.order_date(+)
+  		GROUP BY TO_CHAR(b.dt, 'MM-DD')
+  		HAVING substr(to_char(b.dt,'MM-DD'),0,2) = #{dbMonth}
+  		ORDER BY TO_CHAR(b.dt, 'MM-DD')
+  		]]>
+	</select>
+</mapper>

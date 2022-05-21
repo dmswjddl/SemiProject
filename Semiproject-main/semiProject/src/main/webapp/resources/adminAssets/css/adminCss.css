@@ -1,0 +1,30 @@
+@charset "UTF-8";
+
+.btn-datatable {
+  height: 20px !important;
+  width: 20px !important;
+  font-size: 0.75rem;
+  border-radius: 0.25rem !important;
+}
+
+#btnWrite, #btnList{
+	float:right;
+}
+
+#datatablesSimple {
+	text-align:center;
+}
+
+.content-table tr:first-child {
+	text-align:right;
+	height:10px;
+}
+
+.content-table tr > td{
+	height:200px;
+	vertical-align : top;	
+}
+
+.form-check{
+	padding:10px;
+}

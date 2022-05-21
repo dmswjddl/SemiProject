@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="ProductDAO">
+
+	
+		
+	<insert id="insertProduct" parameterType="ProductVO">
+		
+			INSERT ALL
+			INTO product(p_no, p_price, p_name, p_detail,  p_count,  p_date, p_color, category_code) 
+			VALUES(product_no_seq.nextval, #{pPrice}, #{pName}, #{pDetail},  #{pCount}, sysdate, #{pColor}, #{categoryCode})
+			INTO p_image(file_number,p_no
+			<if test="originFileName !=null">
+			, origin_file_name, stored_file_name, file_size 
+			</if>
+			) 
+			VALUES(file_no_seq.nextval, product_no_seq.nextval
+			<if test="originFileName !=null">
+			, #{originFileName, jdbcType=VARCHAR}, #{storedFileName, jdbcType=VARCHAR}, #{fileSize, jdbcType=VARCHAR}
+			</if>
+			)
+			SELECT * 
+			FROM dual
+			
+			
+			
+			
+	</insert>
+	
+	<select id="getProductList" resultType="ProductVO" parameterType="hashmap">
+
+	select p.p_no, p.p_price, p.p_name, p.p_detail,
+    p.p_count, 
+    to_char(p.p_date,'YY/MM/DD') pDate, 
+    p.p_color,
+    p.category_code, 
+ 	i.file_number, i.origin_file_name, i.stored_file_name, i.file_size,
+ 	c.category_code, c.category_name
+	FROM PRODUCT p inner join p_image i 
+	On p.p_no = i.p_no
+    inner join p_category c
+    on p.category_code = c.category_code
+	
+	<where>
+		<if test="searchCon !=null">
+			${searchCon} LIKE '%${searchKey}%'
+		</if>
+	</where>
+	ORDER BY P_NO DESC
+	</select>
+
+	<select id="getMemberList" resultType="ProductVO" parameterType="hashmap">
+	SELECT *
+	FROM customer
+	<where>
+		<if test="searchCondition !=null">
+			${searchCondition} LIKE '%${searchKeyword}%'
+		</if>
+	</where>	
+	ORDER BY CUSTOMER_NO DESC	
+	</select>
+	
+	
+	 <update id="updateProduct" parameterType="ProductVO">
+		UPDATE product
+		SET
+		p_no=#{pNo},
+		p_price = #{pPrice},
+		p_name = #{pName},
+		p_detail = #{pDetail},
+		p_count = #{pCount},
+		p_color = #{pColor},
+		category_code= #{categoryCode}
+		
+		WHERE p_no = #{pNo}
+		
+		
+	</update>
+	
+	 
+	<delete id="deleteProduct" parameterType="ProductVO">
+		DELETE FROM Product
+		WHERE p_no = #{pNo}
+	</delete>
+	
+	<select id="detailProductView" parameterType="ProductVO" resultType="ProductVO">
+		SELECT p.*, i.*
+		FROM Product p 
+		inner join p_image i
+		on p.p_no=i.file_number
+		where p.p_no=#{pNo}
+	</select>
+	
+
+	<select id="getCategoryList" resultType="CategoryVO">
+	
+	SELECT CATEGORY_CODE, nvl(CATEGORY_NAME,'a') CATEGORY_NAME
+	FROM p_category
+	
+	</select>
+	
+	<select id="getDcategoryList" parameterType="ProductVO" resultType="CategoryVO">
+	
+	SELECT D_CATEGORY_CODE, nvl(D_NAME,'a') D_NAME
+	FROM P_D_CATEGORY
+	WHERE category_code = #{categoryCode}
+	
+	</select>
+	
+	<select id="changeCategory" parameterType="CategoryVO" resultType="CategoryVO">
+	
+	SELECT *
+	FROM p_d_category
+	where  CATEGORY_CODE = #{categoryCode}
+  	
+  	</select>
+	 
+</mapper>

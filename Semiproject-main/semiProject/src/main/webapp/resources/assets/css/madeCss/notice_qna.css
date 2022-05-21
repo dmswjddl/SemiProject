@@ -1,0 +1,17 @@
+@charset "UTF-8";
+
+#btnList, #btnQnAWrite,#btnQnAWrite,#btnQnAList,#btnQnAList{
+	float:right;
+}
+
+#exampleFormControlTextarea1{
+	height: 300px;
+}
+
+.reply{
+	padding-left: 150px;
+}
+
+ .pagingNum{
+ 	text-align : center;
+ }

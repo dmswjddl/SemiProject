@@ -1,0 +1,491 @@
+계정생성하기
+cmd 열기
+1)sqlplus 명령어 실행 후 
+2)system/admin1234 ID와 PASSWORD입력
+
+3)계정생성
+create user shop identified by 1234;
+
+4)권한부여
+grant connect, resource, dba to shop;
+
+5)변경사항 적용
+commit;
+
+/* Customer */
+CREATE TABLE customer (
+	Customer_NO NUMBER NOT NULL, /* Customer_NO */
+	customer_name VARCHAR2(30), /* Customer_Name */
+	customer_id varchar2(12), /* Custoemr_ID */
+	customer_pass varchar2(16), /* Customer_PASS */
+	customer_rrn number(13), /* Customoer_RRN */
+	customer_sex char(1), /* Customer_Sex */
+	customer_email varchar2(30), /* Customer_EMAIL */
+	customer_tel char(11), /* Customer_tel */
+	customer_signdate DATE /* Customer_signdate */
+);
+
+CREATE UNIQUE INDEX PK_customer
+	ON customer (
+		Customer_NO ASC
+	);
+
+ALTER TABLE customer
+	ADD
+		CONSTRAINT PK_customer
+		PRIMARY KEY (
+			Customer_NO
+		);
+
+/* ADMIN */
+CREATE TABLE admin (
+	admin_id varchar2(12), /* ADMIN_ID */
+	admin_pass varchar2(16) /* ADMIN_PASS */
+);
+
+/* Product */
+CREATE TABLE product (
+	p_no NUMBER NOT NULL, /* P_NO */
+	p_price varchar2(100), /* P_NAME */
+	p_name NUMBER, /* P_PRICE */
+	p_detail varchar2(1000), /* P_DETAIL */
+	p_brand varchar2(100), /* P_BRAND */
+	p_count NUMBER, /* P_Count */
+	p_date DATE, /* P_date */
+	p_hits NUMBER, /* p_hits */
+	p_color varchar2(15), /* 새 컬럼 */
+	category_code VARCHAR2(10) /* Category_code */
+);
+
+CREATE UNIQUE INDEX PK_product
+	ON product (
+		p_no ASC
+	);
+
+ALTER TABLE product
+	ADD
+		CONSTRAINT PK_product
+		PRIMARY KEY (
+			p_no
+		);
+
+/* PRODUCT_CATEGORY */
+CREATE TABLE p_category (
+	category_code VARCHAR2(10) NOT NULL, /* Category_code */
+	category_name VARCHAR2(100) /* Category_name */
+);
+
+CREATE UNIQUE INDEX PK_p_category
+	ON p_category (
+		category_code ASC
+	);
+
+ALTER TABLE p_category
+	ADD
+		CONSTRAINT PK_p_category
+		PRIMARY KEY (
+			category_code
+		);
+
+/* Coupon */
+CREATE TABLE coupon (
+	coupon_no NUMBER NOT NULL, /* Coupon_no */
+	coupon_name VARCHAR2(30), /* Coupon_name */
+	coupon_discount number(3), /* Coupon_discount */
+	coupon_price number(6), /* Coupon_PRICE */
+	coupon_expiredate DATE, /* coupon_expiredate */
+	Customer_NO NUMBER /* Customer_NO */
+);
+
+CREATE UNIQUE INDEX PK_coupon
+	ON coupon (
+		coupon_no ASC
+	);
+
+ALTER TABLE coupon
+	ADD
+		CONSTRAINT PK_coupon
+		PRIMARY KEY (
+			coupon_no
+		);
+
+/* user_ORDER */
+CREATE TABLE u_order (
+	order_no NUMBER NOT NULL, /* ORDER_NO */
+	Customer_NO NUMBER, /* Customer_NO */
+	addrr1 Number(6), /* adress1 */
+	addr2 varchar2(100), /* adress2 */
+	addr3 varchar2(100), /* adress3 */
+	receiver_name VARCHAR2(30), /* receiver_name */
+	receiver_tel char(11) /* receiver_tel */
+);
+
+CREATE UNIQUE INDEX PK_u_order
+	ON u_order (
+		order_no ASC
+	);
+
+ALTER TABLE u_order
+	ADD
+		CONSTRAINT PK_u_order
+		PRIMARY KEY (
+			order_no
+		);
+
+/* Deliver_Address */
+CREATE TABLE d_address (
+	Customer_NO NUMBER NOT NULL, /* Customer_NO */
+	c_addr1 Number(6), /* c_addr1 */
+	c_addr2 varchar2(100), /* c_addr2 */
+	c_addr3 varchar2(100) /* c_addr3 */
+);
+
+CREATE UNIQUE INDEX PK_d_address
+	ON d_address (
+		Customer_NO ASC
+	);
+
+ALTER TABLE d_address
+	ADD
+		CONSTRAINT PK_d_address
+		PRIMARY KEY (
+			Customer_NO
+		);
+
+/* UserOrder_detail */
+CREATE TABLE u_o_detail (
+	order_detail_number NUMBER NOT NULL, /* order_detail_number */
+	order_no NUMBER, /* ORDER_NO */
+	p_no NUMBER, /* P_NO */
+	coupon_no NUMBER, /* Coupon_no */
+	product_count NUMBER, /* product_count */
+	product_price NUMBER, /* product_price */
+	order_check char(1), /* 새 컬럼2 */
+	order_date date, /* 새 컬럼 */
+	refund_check char(1) /* refund_check */
+);
+
+CREATE UNIQUE INDEX PK_u_o_detail
+	ON u_o_detail (
+		order_detail_number ASC
+	);
+
+ALTER TABLE u_o_detail
+	ADD
+		CONSTRAINT PK_u_o_detail
+		PRIMARY KEY (
+			order_detail_number
+		);
+
+/* UserOrder_refund */
+CREATE TABLE U_O_refund (
+	order_detail_number NUMBER NOT NULL, /* order_detail_number */
+	refund_reason varchar2(300), /* refund_reason */
+	user_email varchar2(30) /* user_email */
+);
+
+CREATE UNIQUE INDEX PK_U_O_refund
+	ON U_O_refund (
+		order_detail_number ASC
+	);
+
+ALTER TABLE U_O_refund
+	ADD
+		CONSTRAINT PK_U_O_refund
+		PRIMARY KEY (
+			order_detail_number
+		);
+
+/* Product_review */
+CREATE TABLE p_review (
+	r_no NUMBER NOT NULL, /* r_no */
+	p_no NUMBER, /* P_NO */
+	Customer_NO NUMBER, /* Customer_NO */
+	r_id varchar2(12), /* r_id */
+	r_content varchar2(300), /* r_content */
+	r_date DATE, /* r_date */
+	r_star NUMBER(1) /* r_star */
+);
+
+CREATE UNIQUE INDEX PK_p_review
+	ON p_review (
+		r_no ASC
+	);
+
+ALTER TABLE p_review
+	ADD
+		CONSTRAINT PK_p_review
+		PRIMARY KEY (
+			r_no
+		);
+
+/* product_image */
+CREATE TABLE p_image (
+	file_number NUMBER NOT NULL, /* file_number */
+	p_no NUMBER, /* P_NO */
+	origin_file_name VARCHAR2(100), /* origin_file_name */
+	stored_file_name VARCHAr2(100), /* stored_file_name */
+	file_size number /* 새 컬럼 */
+);
+
+CREATE UNIQUE INDEX PK_p_image
+	ON p_image (
+		file_number ASC
+	);
+
+ALTER TABLE p_image
+	ADD
+		CONSTRAINT PK_p_image
+		PRIMARY KEY (
+			file_number
+		);
+
+/* Cart */
+CREATE TABLE cart (
+	cart_no NUMBER NOT NULL, /* Cart_no */
+	Customer_NO NUMBER, /* Customer_NO */
+	p_no NUMBER, /* P_NO */
+	cart_count NUMBER /* cart_count */
+);
+
+CREATE UNIQUE INDEX PK_cart
+	ON cart (
+		cart_no ASC
+	);
+
+ALTER TABLE cart
+	ADD
+		CONSTRAINT PK_cart
+		PRIMARY KEY (
+			cart_no
+		);
+
+/* Board */
+CREATE TABLE board (
+	board_no NUMBER NOT NULL, /* Board_NO */
+	board_title VARCHAR2(100), /* Board_Title */
+	board_content VARCHAR2(1000), /* Board_Content */
+	board_date DATE /* Board_date */
+);
+
+CREATE UNIQUE INDEX PK_board
+	ON board (
+		board_no ASC
+	);
+
+ALTER TABLE board
+	ADD
+		CONSTRAINT PK_board
+		PRIMARY KEY (
+			board_no
+		);
+
+/* Scrap */
+CREATE TABLE scrap (
+	scrap_no NUMBER NOT NULL, /* Scrap_no */
+	Customer_NO NUMBER, /* Customer_NO */
+	p_no NUMBER /* P_NO */
+);
+
+CREATE UNIQUE INDEX PK_scrap
+	ON scrap (
+		scrap_no ASC
+	);
+
+ALTER TABLE scrap
+	ADD
+		CONSTRAINT PK_scrap
+		PRIMARY KEY (
+			scrap_no
+		);
+
+/* 새 테이블 */
+CREATE TABLE QnA (
+	Q_title varchar2(50), /* 새 컬럼2 */
+	Q_content varchar2(1500), /* 새 컬럼3 */
+	Q_date date, /* 새 컬럼4 */
+	Q_no number, /* 새 컬럼 */
+	Q_writer varchar2(30), /* 새 컬럼5 */
+	Q_pass varchar2(20), /* 새 컬럼8 */
+	Qr_content varchar2(1500), /* 새 컬럼6 */
+	Qr_date date /* 새 컬럼7 */
+);
+
+/* 새 테이블2 */
+CREATE TABLE p_d_category (
+	d_category_code varchar2(10) NOT NULL, /* 새 컬럼 */
+	category_code VARCHAR2(10), /* Category_code */
+	d_name varchar2(30) /* 새 컬럼2 */
+);
+
+CREATE UNIQUE INDEX PK_p_d_category
+	ON p_d_category (
+		d_category_code ASC
+	);
+
+ALTER TABLE p_d_category
+	ADD
+		CONSTRAINT PK_p_d_category
+		PRIMARY KEY (
+			d_category_code
+		);
+
+ALTER TABLE product
+	ADD
+		CONSTRAINT FK_p_category_TO_product
+		FOREIGN KEY (
+			category_code
+		)
+		REFERENCES p_category (
+			category_code
+		);
+
+ALTER TABLE coupon
+	ADD
+		CONSTRAINT FK_customer_TO_coupon
+		FOREIGN KEY (
+			Customer_NO
+		)
+		REFERENCES customer (
+			Customer_NO
+		);
+
+ALTER TABLE u_order
+	ADD
+		CONSTRAINT FK_customer_TO_u_order
+		FOREIGN KEY (
+			Customer_NO
+		)
+		REFERENCES customer (
+			Customer_NO
+		);
+
+ALTER TABLE d_address
+	ADD
+		CONSTRAINT FK_customer_TO_d_address
+		FOREIGN KEY (
+			Customer_NO
+		)
+		REFERENCES customer (
+			Customer_NO
+		);
+
+ALTER TABLE u_o_detail
+	ADD
+		CONSTRAINT FK_u_order_TO_u_o_detail
+		FOREIGN KEY (
+			order_no
+		)
+		REFERENCES u_order (
+			order_no
+		);
+
+ALTER TABLE u_o_detail
+	ADD
+		CONSTRAINT FK_product_TO_u_o_detail
+		FOREIGN KEY (
+			p_no
+		)
+		REFERENCES product (
+			p_no
+		);
+
+ALTER TABLE u_o_detail
+	ADD
+		CONSTRAINT FK_coupon_TO_u_o_detail
+		FOREIGN KEY (
+			coupon_no
+		)
+		REFERENCES coupon (
+			coupon_no
+		);
+
+ALTER TABLE U_O_refund
+	ADD
+		CONSTRAINT FK_u_o_detail_TO_U_O_refund
+		FOREIGN KEY (
+			order_detail_number
+		)
+		REFERENCES u_o_detail (
+			order_detail_number
+		);
+
+ALTER TABLE p_review
+	ADD
+		CONSTRAINT FK_product_TO_p_review
+		FOREIGN KEY (
+			p_no
+		)
+		REFERENCES product (
+			p_no
+		);
+
+ALTER TABLE p_review
+	ADD
+		CONSTRAINT FK_customer_TO_p_review
+		FOREIGN KEY (
+			Customer_NO
+		)
+		REFERENCES customer (
+			Customer_NO
+		);
+
+ALTER TABLE p_image
+	ADD
+		CONSTRAINT FK_product_TO_p_image
+		FOREIGN KEY (
+			p_no
+		)
+		REFERENCES product (
+			p_no
+		);
+
+ALTER TABLE cart
+	ADD
+		CONSTRAINT FK_customer_TO_cart
+		FOREIGN KEY (
+			Customer_NO
+		)
+		REFERENCES customer (
+			Customer_NO
+		);
+
+ALTER TABLE cart
+	ADD
+		CONSTRAINT FK_product_TO_cart
+		FOREIGN KEY (
+			p_no
+		)
+		REFERENCES product (
+			p_no
+		);
+
+ALTER TABLE scrap
+	ADD
+		CONSTRAINT FK_customer_TO_scrap
+		FOREIGN KEY (
+			Customer_NO
+		)
+		REFERENCES customer (
+			Customer_NO
+		);
+
+ALTER TABLE scrap
+	ADD
+		CONSTRAINT FK_product_TO_scrap
+		FOREIGN KEY (
+			p_no
+		)
+		REFERENCES product (
+			p_no
+		);
+
+ALTER TABLE p_d_category
+	ADD
+		CONSTRAINT FK_p_category_TO_p_d_category
+		FOREIGN KEY (
+			category_code
+		)
+		REFERENCES p_category (
+			category_code
+		);

@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="CategoryDAO">
+	<select id="getDCategory" resultType="CategoryVO">
+		SELECT d.d_category_code as
+		dCategoryCode,
+		d.d_name as dName,
+		d.category_code as categoryCode,
+		p.category_name as categoryName
+		FROM p_d_category d join p_category p
+		on
+		p.category_code = d.category_code
+		order by d.category_code,
+		d.d_category_code
+	</select>
+
+	<select id="getCategory" resultType="CategoryVO">
+		SELECT category_name as
+		categoryName,
+		category_code as categoryCode
+		FROM p_category
+		order by
+		category_code
+	</select>
+
+	<insert id="addPCate" parameterType="CategoryVO">
+		INSERT INTO
+		p_category(category_code,category_name)
+		VALUES(p_cate_seq.nextval,
+		#{categoryName})
+	</insert>
+
+	<select id="getDInfo" parameterType="CategoryVO"
+		resultType="CategoryVO">
+		SELECT d.d_name as dName, c.category_name as categoryName
+		FROM p_category c join p_d_category d
+		ON c.category_code =
+		d.category_code
+		WHERE d.d_category_code = #{dCategoryCode}
+	</select>
+
+	<insert id="dAddCate" parameterType="CategoryVO">
+		INSERT INTO
+		p_d_category(D_CATEGORY_CODE,CATEGORY_CODE, D_NAME)
+		VALUES(p_d_cate_seq.nextval,
+		(SELECT category_code FROM p_category
+		where category_name=#{categoryName}),
+		#{dName})
+	</insert>
+
+	<update id="dModifyCate" parameterType="CategoryVO">
+		UPDATE p_d_category
+		SET d_name = #{dName}
+		WHERE d_category_code = #{dCategoryCode}
+	</update>
+	
+	<update id="pModifyCate" parameterType="CategoryVO">
+		UPDATE p_category
+		SET category_name = #{categoryName}
+		WHERE category_code= #{categoryCode}
+	</update>
+	
+	<delete id="dDeleteCate" parameterType="CategoryVO">
+		DELETE FROM p_d_category
+		WHERE d_category_code = #{dCategoryCode}
+	</delete>
+	
+	<select id="checkChild" parameterType="CategoryVO" resultType="CategoryVO">
+		SELECT *
+		FROM p_d_category
+		WHERE category_code = #{categoryCode}
+	</select>
+	
+	<delete id="pDeleteCate" parameterType="CategoryVO">
+		DELETE FROM p_category
+		WHERE category_code = #{categoryCode}
+	</delete>
+</mapper>

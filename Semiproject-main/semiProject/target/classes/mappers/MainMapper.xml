@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="MainDAO">
+	<select id="loginCheck" resultType="CustomerVO" parameterType="CustomerVO">
+		SELECT c.*, d.*
+		FROM CUSTOMER c inner join d_address d
+			ON c.customer_no = d.customer_no
+		WHERE customer_id = #{customerId} 
+			and customer_pass = #{customerPass}
+	</select>
+
+	<insert id="createAccount" parameterType="CustomerVO">
+		INSERT ALL
+		INTO
+		CUSTOMER(
+		customer_no, customer_id, customer_pass, customer_name,
+		customer_rrn,
+		customer_sex, customer_email, customer_tel,
+		customer_signdate
+		)
+		VALUES(
+		cust_no_seq.nextval, #{customerId},
+		#{customerPass},
+		#{customerName}, #{customerRrn1}||#{customerRrn2},
+		#{customerSex}, #{customerEmailF}||'@'||#{customerEmailE},
+		#{customerTel1}||'-'||#{customerTel2}||'-'||#{customerTel3},
+		sysdate
+		)
+		INTO
+		D_ADDRESS(customer_no, c_addr1,c_addr2,c_addr3)
+		VALUES(cust_no_seq.nextval,#{cAddr1}, #{cAddr2}, #{cAddr3})
+		SELECT *
+		FROM dual
+	</insert>
+	
+	<select id="idCheck" parameterType="CustomerVO" resultType="CustomerVO">
+		SELECT *
+		FROM CUSTOMER
+		WHERE customer_id = #{customerId}
+	</select>
+</mapper>

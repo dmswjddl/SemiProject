@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="BoardDAO">
+
+	
+	<!-- 공지사항 상세 보기 -->
+	<select id="getBoard" parameterType="BoardVO" resultType="BoardVO">
+		SELECT * 
+		FROM board
+		WHERE board_no=#{boardNo}
+	</select>
+	
+	<!-- 공지사항 내용 불러오기 -->
+	<select id="selectBoard" parameterType="BoardVO" resultType="BoardVO">
+		SELECT *
+		FROM board
+		WHERE board_no = #{boardNo}
+	</select>	
+	
+	<!--공지사항 페이징 처리 게시물 총 갯수-->
+	<select id="count" resultType="int">
+	SELECT count(*)
+	FROM board
+	</select>
+	
+	<!-- qna목록 + 페이징 갯수 -->
+	<select id="noticeListPage" parameterType="hashmap" resultType="BoardVO">
+	
+	SELECT to_CHAR(board_date, 'YY/MM/DD') boardDate, board_no, board_title, board_content, board_Fname
+	FROM board
+	WHERE board_no IN(SELECT board_no
+	               FROM(SELECT rownum rnum, board_no FROM (SELECT board_no FROM board ORDER BY board_no DESC))
+	               WHERE rnum between ${displayPost} AND ${postNum})
+	ORDER BY board_no DESC
+	</select>
+	
+</mapper>

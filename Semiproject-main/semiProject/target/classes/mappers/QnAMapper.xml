@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="QnADAO">
+
+<!-- qna 작성 -->
+<insert id="insertQnA" parameterType="QnAVO">
+INSERT INTO 
+	qna(q_no, q_title, q_content, q_date,
+	    q_writer,  q_pass)
+	VALUES(qna_no_seq.NEXTVAL, #{qTitle}, #{qContent},
+	 	sysdate, #{qWriter}, #{qPass})
+</insert>
+
+<!-- qna 상세 보기 -->
+<select id="getQnA" parameterType="QnAVO" resultType="QnAVO">
+SELECT *
+FROM qna
+WHERE q_no=#{qNo}
+</select>
+
+<!-- qna 페이징 처리 게시물 총 갯수-->
+<select id="count" resultType="int">
+SELECT count(*)
+FROM qna
+</select>
+
+<!-- qna목록 + 페이징 갯수 -->
+<select id="qnAListPage" parameterType="hashmap" resultType="QnAVO">
+
+SELECT to_CHAR(q_date, 'YY/MM/DD') q_date, q_title, substr(q_writer,1,1)||'**' q_writer, q_content,
+		q_no, qr_content, to_char(qr_date, 'YY/MM/DD') qr_date , q_pass
+FROM qna
+WHERE q_no IN(SELECT q_no
+               FROM(SELECT rownum rnum, q_no FROM (SELECT q_no FROM qna ORDER BY q_no DESC))
+               WHERE rnum between ${displayPost} AND ${postNum})
+ORDER BY q_no DESC
+
+</select>
+
+</mapper>

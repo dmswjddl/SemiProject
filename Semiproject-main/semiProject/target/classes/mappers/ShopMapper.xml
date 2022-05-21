@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="ShopDAO">
+
+	<!-- 전체 상품 보기 -->
+	<select id="getProductList" resultType="ShopVO">
+		SELECT p.*, c.*
+		FROM
+		product p Join p_category c
+		ON p.category_code = c.category_code
+	</select>
+	<!-- WHERE p_no = (SELECT p_no, stored_file_name FROM p_image) // 이미지 -->
+
+	<!-- 전체 상품 + 페이징 -->
+<select id="productListPage" parameterType="hashMap" resultType="ShopVO">
+      
+      <![CDATA[
+      SELECT *
+      FROM(   SELECT p.p_no, p.p_name, p.p_price, p.p_detail, p.p_color, row_NUMBER() OVER(ORDER BY p_name desc) as rnum, pi.stored_file_name, pi.file_number, pi.origin_file_name
+                FROM product p JOIN p_image pi
+                ON p.p_no=pi.p_no)
+      WHERE rnum between #{displayPost} and #{postNum}
+      ]]>
+
+   </select>
+
+	<!-- 페이징 - 게시물의 총 갯수 쿼리문 -->
+	<select id="count" resultType="int">
+		SELECT count(*)
+		FROM product
+	</select>
+
+	<!-- 물품 상세보기 -->
+	<select id="getDetail" resultType="ShopVO">
+		SELECT *
+		FROM product
+		WHERE p_no = #{pNo}
+	</select>
+
+	<!-- 리뷰 별점끌어오기 -->
+	<!-- <select id="rStar" resultType="ShopVO"> SELECT nvl(r_star) FROM p_review 
+		WHERE r_star SELECT FROM WHERE </select> -->
+
+	<!-- 대분류 -->
+	<select id="category" parameterType="ShopVO" resultType="ShopVO">
+		SELECT *
+		FROM p_category
+		ORDER BY category_code desc
+	</select>
+
+	<!-- 중분류 -->
+	<select id="smallCate" parameterType="ShopVO"
+		resultType="ShopVO">
+		SELECT p.*, s.*
+		FROM p_d_category p JOIN p_category s
+		ON p.category_code = s.category_code
+		ORDER BY p.category_code desc
+	</select>
+</mapper>
+

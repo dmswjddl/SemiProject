@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="CheckOutDAO">
+	<!-- 카트에서 구매페이지로 넘어갈때의 정보 -->
+	<select id="cartInfo" parameterType="CheckOutVO" resultType="CheckOutVO">
+		SELECT cu.*, p.*, ca.*
+		FROM customer cu join cart ca
+		on
+		cu.customer_no = ca.customer_no
+		join product p
+		on ca.p_no = p.p_no
+		WHERE
+		cu.customer_no = #{customerNo}
+	</select>
+
+	<!-- 상품에서 바로 구매페이지로 넘어갈때의 정보 -->
+	<select id="productInfo" parameterType="CheckOutVO"	resultType="CheckOutVO">
+		SELECT p.*, pi.*
+		FROM product p join p_image pi
+		ON p.p_no =
+		pi.p_no
+		WHERE p.p_no = #{pNo}
+	</select>
+
+	<!-- 상품에서 바로 구매페이지로 넘어갔을때 단일 구매 정보와 재고만큼 - 처리 -->
+	<insert id="pBuyComplete" parameterType="CheckOutVO">
+		INSERT ALL
+		INTO
+		U_ORDER(order_no, customer_no, addr1, addr2, addr3,
+		receiver_name,
+		receiver_tel, order_date)
+		VALUES(o_no_seq.nextval, #{customerNo},
+		#{addr1},#{addr2},#{addr3},
+		#{receiverName},#{receiverTel},sysdate)
+		INTO
+		u_o_detail(ORDER_DETAIL_NUMBER, order_no, p_no, product_count,
+		product_price, order_check, refund_check)
+		VALUES(O_D_NO_SEQ.nextval,
+		o_no_seq.nextval, #{pNo}, #{pGet},
+		#{productPrice}, 'N','N')
+		SELECT *
+		FROM dual
+	</insert>
+	<update id="pBuyCount" parameterType="CheckOutVO">
+		update product 
+		set p_count = p_count - #{pGet} 
+		where p_no = #{pNo}
+	</update>
+
+	<insert id="cBuyComplete1" parameterType="CheckOutVO">
+		INSERT INTO
+		U_ORDER(order_no, customer_no, addr1, addr2, addr3,
+		receiver_name,receiver_tel, order_date)
+		VALUES(o_no_seq.nextval,
+		#{customerNo}, #{addr1},#{addr2},#{addr3},
+		#{receiverName},#{receiverTel},sysdate)
+	</insert>
+	<update id="cBuyComplete2" parameterType="CheckOutVO">
+			INSERT INTO u_o_detail(
+						order_detail_number, 
+						order_no, 
+						p_no,
+						product_count, 
+						product_price, 
+						order_check, 
+						refund_check
+			)
+			SELECT o_d_no_seq.nextval as order_detail_number, T.*
+			FROM( 
+				<foreach collection="coList" item="item" index="index" separator="union all">
+					 SELECT (select max(order_no) from u_order) as order_no,
+					 		#{item.pNo} as p_no,
+					 		#{item.productCount} as product_count,
+					 		#{item.productPrice} as product_price,
+					 		'N' as order_check,
+					 		'N' as refund_check
+					 FROM sys.dual
+				 </foreach>
+			) T
+	</update>
+	<update id="cBuyCount" parameterType="CheckOutVO">
+		<foreach collection="coList" item="item" index="index" separator=";" open="DECLARE BEGIN" close=";END;">
+			update product 
+			set p_count = p_count - #{item.productCount} 
+			<where>
+				p_no = #{item.pNo}
+			</where>
+		</foreach>
+	</update>
+	<delete id="cartDelete" parameterType="CheckOutVO">
+		DELETE FROM cart
+		<where>
+			<foreach collection="coList" item="item" open="" close="" separator="or">
+				(cart_no = #{item.cartNo})
+			</foreach>
+		</where> 
+	</delete> 
+</mapper>
